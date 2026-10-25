@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0}img{max-width:100%;height:auto}[hidden]{display:none!important}</style>
+<title>JX Client Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* Layout: client portal — white sheet, blue/green brand, order dashboard + COA detail, status pills. */
+  :root{
+    --bg:#ffffff;--surface:#f4f7fb;--surface-2:#eef4f9;--fg:#12395f;--muted:#5c7389;--line:#dde7f0;
+    --blue:#1f66b0;--blue-deep:#113a66;--green:#2f9e6b;--green-tint:#e8f6ee;--blue-tint:#eaf2fb;
+    --warn:#b55b00;--warn-tint:#fdf0e3;
+    --font-display:"Noto Serif SC",Georgia,serif;
+    --font-body:"Inter","Noto Sans SC","PingFang SC",system-ui,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;line-height:1.25}
+  p{margin:0}
+  .num{font-variant-numeric:tabular-nums}
+  [hidden]{display:none!important}
+
+  .logo{font-family:var(--font-body);font-weight:800;font-size:1.35rem;letter-spacing:-.01em}
+  .logo .j{color:var(--blue)}.logo .x{color:var(--green);margin-left:-.06em}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:.92rem;border-radius:8px;padding:11px 20px;border:1.5px solid transparent;cursor:pointer;background:var(--blue);color:#fff;font-family:inherit;text-decoration:none}
+  .btn:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+  .btn-sm{padding:7px 14px;font-size:.84rem}
+
+  /* topbar */
+  .topbar{background:var(--bg);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:50}
+  .topbar-in{max-width:900px;margin-inline:auto;display:flex;align-items:center;gap:12px;min-height:58px;padding-inline:max(18px,env(safe-area-inset-left,0px));padding-block:8px}
+  .brand{display:flex;align-items:center;gap:9px;text-decoration:none;margin-right:auto}
+  .brand small{display:block;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .brand b{font-family:var(--font-display);font-size:.98rem}
+  .lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .lang-switch button{border:none;background:transparent;font-weight:700;font-size:.8rem;padding:7px 12px;cursor:pointer;color:var(--muted);font-family:inherit}
+  .lang-switch button[aria-pressed="true"]{background:var(--blue);color:#fff}
+  .who{display:flex;align-items:center;gap:10px;font-size:.86rem}
+  .who .nm{font-weight:600}
+
+  .page{max-width:900px;margin-inline:auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:clamp(20px,4vw,40px)}
+
+  /* login */
+  .login-wrap{min-height:72vh;display:flex;align-items:center;justify-content:center}
+  .login-card{width:100%;max-width:400px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:32px 28px}
+  .login-card .logo{font-size:1.7rem;margin-bottom:6px}
+  .login-card h1{font-size:1.25rem;color:var(--blue-deep);margin-bottom:4px}
+  .login-card .sub{color:var(--muted);font-size:.88rem;margin-bottom:22px}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:.8rem;font-weight:600;margin-bottom:6px}
+  input{width:100%;font-family:inherit;font-size:.95rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+  input:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+  .login-card .btn{width:100%;margin-top:6px}
+  .demo-hint{margin-top:18px;font-size:.78rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+
+  /* dashboard */
+  .dash-head{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+  .dash-head h1{font-size:clamp(1.4rem,3vw,1.9rem);color:var(--blue-deep)}
+  .dash-sub{color:var(--muted);font-size:.92rem;margin-bottom:24px}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .stat b{display:block;font-family:var(--font-display);font-size:1.5rem;color:var(--blue-deep)}
+  .stat span{font-size:.76rem;color:var(--muted)}
+
+  .orders{background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .orders-title{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:16px 20px 6px}
+  .oscroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:600px;font-size:.9rem}
+  thead th{text-align:left;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 16px;border-bottom:1px solid var(--line)}
+  thead th:first-child{padding-left:20px}
+  tbody td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody td:first-child{padding-left:20px}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:var(--surface)}
+  .oid{font-weight:700;color:var(--blue)}
+  .oprod{font-weight:600}
+  .osub{color:var(--muted);font-size:.8rem}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.76rem;border-radius:999px;padding:4px 11px;white-space:nowrap}
+  .pill.ready{color:var(--green);background:var(--green-tint)}
+  .pill.lab{color:var(--blue);background:var(--blue-tint)}
+  .arrow{color:var(--muted);font-weight:700}
+
+  /* order detail (COA) */
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-weight:600;font-size:.88rem;background:none;border:none;cursor:pointer;padding:0;margin-bottom:16px;font-family:inherit}
+  .cert{background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .cert-head{padding:22px 24px;border-bottom:2px solid var(--blue-deep);display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start}
+  .cert-head h2{font-size:1.2rem;color:var(--blue-deep)}
+  .cert-head .csub{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:5px;font-weight:600}
+  .cert-head .rid{text-align:right}
+  .cert-head .rid span{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .cert-head .rid b{font-size:1.05rem;color:var(--blue)}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  @media(min-width:680px){.meta{grid-template-columns:repeat(3,1fr)}}
+  .meta div{background:var(--bg);padding:13px 18px}
+  .meta b{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;font-weight:700}
+  .meta span{font-size:.92rem}
+  .rtitle{font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:16px 24px 6px}
+  .ctbl thead th:first-child{padding-left:24px}
+  .ctbl td:first-child{padding-left:24px}
+  .ctbl .r{text-align:right}.ctbl .r:last-child{padding-right:24px}
+  .tname{font-weight:600}.tmethod{color:var(--muted);font-size:.82rem}
+  .pass{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.78rem;color:var(--green);background:var(--green-tint);border-radius:999px;padding:4px 10px}
+  .cert-foot{display:grid;gap:20px;padding:22px 24px;border-top:1px solid var(--line);background:var(--surface)}
+  @media(min-width:620px){.cert-foot{grid-template-columns:1fr auto;align-items:center}}
+  .overall .big{font-family:var(--font-display);font-size:1.4rem;color:var(--green)}
+  .overall small{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .qrbox{display:flex;align-items:center;gap:14px}
+  .qrbox #qr{width:88px;height:88px;flex:0 0 auto;background:#fff;padding:6px;border:1px solid var(--line);border-radius:8px}
+  .qrbox #qr img,.qrbox #qr canvas{display:block;width:100%!important;height:100%!important}
+  .qrbox .qrtxt{font-size:.74rem;color:var(--muted);max-width:18ch}
+  .pending{padding:40px 24px;text-align:center;color:var(--muted)}
+  .pending .big{font-family:var(--font-display);font-size:1.3rem;color:var(--blue);margin-bottom:6px}
+
+  .foot{text-align:center;color:var(--muted);font-size:.78rem;padding:26px 0 8px}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"><span class="j">J</span><span class="x">X</span></span><span><b data-zh="JX 检测实验室">JX Laboratories</b><small data-zh="客户门户">Client Portal</small></span></a>
+    <div class="who" id="who" hidden>
+      <span class="nm" id="whoName"></span>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" data-zh="退出">Log out</button>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language / 语言">
+      <button type="button" id="langEn" aria-pressed="true">EN</button>
+      <button type="button" id="langZh" aria-pressed="false">中文</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- LOGIN -->
+  <section id="view-login" class="login-wrap">
+    <div class="login-card">
+      <div class="logo" aria-hidden="true"><span class="j">J</span><span class="x">X</span></div>
+      <h1 data-zh="登录您的账户">Sign in to your account</h1>
+      <p class="sub" data-zh="查看您的订单与检测报告。">View your orders and test reports.</p>
+      <form id="loginForm">
+        <div class="field"><label for="email" data-zh="邮箱">Email</label><input id="email" type="email" autocomplete="username" placeholder="you@company.com"></div>
+        <div class="field"><label for="pw" data-zh="密码">Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+        <button class="btn" type="submit" data-zh="登录">Sign in</button>
+      </form>
+      <div class="demo-hint" data-zh="※ 演示：任意邮箱和密码均可登录。正式版需后端实现真实账户、密码与私密数据。">※ Demo: any email &amp; password signs you in. A live version needs a backend for real accounts, passwords and private data.</div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="view-dash" hidden>
+    <div class="dash-head">
+      <h1 id="greeting" data-zh="欢迎回来">Welcome back</h1>
+    </div>
+    <p class="dash-sub" data-zh="以下是您的订单。点击任意订单查看结果。">Here are your orders. Tap any order to see results.</p>
+    <div class="stat-row">
+      <div class="stat"><b class="num" id="st-total">—</b><span data-zh="订单总数">Total orders</span></div>
+      <div class="stat"><b class="num" id="st-ready">—</b><span data-zh="已出结果">Results ready</span></div>
+      <div class="stat"><b class="num" id="st-lab">—</b><span data-zh="检测中">In the lab</span></div>
+    </div>
+    <div class="orders">
+      <div class="orders-title" data-zh="您的订单">Your orders</div>
+      <div class="oscroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-zh="订单编号">Order</th>
+              <th data-zh="产品">Product</th>
+              <th data-zh="报告日期">Reported</th>
+              <th data-zh="状态">Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="orderRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORDER DETAIL -->
+  <section id="view-order" hidden>
+    <button class="back" id="backBtn" type="button">← <span data-zh="返回订单列表">Back to orders</span></button>
+    <article class="cert">
+      <div class="cert-head">
+        <div>
+          <h2 data-zh="分析证书 (COA)">Certificate of Analysis</h2>
+          <div class="csub" data-zh="ISO/IEC 17025 认可 · FDA 登记">ISO/IEC 17025 Accredited · FDA Registered</div>
+        </div>
+        <div class="rid"><span data-zh="订单编号">Order ID</span><b id="d-rid" class="num">—</b></div>
+      </div>
+      <div class="meta">
+        <div><b data-zh="产品">Product</b><span id="d-product">—</span></div>
+        <div><b data-zh="基质">Matrix</b><span id="d-matrix">—</span></div>
+        <div><b data-zh="批次号">Lot / Batch</b><span id="d-lot" class="num">—</span></div>
+        <div><b data-zh="收样日期">Received</b><span id="d-received" class="num">—</span></div>
+        <div><b data-zh="报告日期">Reported</b><span id="d-reported" class="num">—</span></div>
+        <div><b data-zh="状态">Status</b><span id="d-status">—</span></div>
+      </div>
+
+      <div id="d-results">
+        <div class="rtitle" data-zh="检测结果">Analytical results</div>
+        <div class="oscroll">
+          <table class="ctbl">
+            <thead><tr>
+              <th data-zh="检测项目">Test</th><th data-zh="方法">Method</th>
+              <th class="r" data-zh="结果">Result</th><th class="r" data-zh="限值">Limit</th><th class="r" data-zh="判定">Status</th>
+            </tr></thead>
+            <tbody id="d-rows"></tbody>
+          </table>
+        </div>
+        <div class="cert-foot">
+          <div>
+            <div class="overall"><div><small data-zh="总体判定">Overall result</small><span class="big" id="d-overall">PASS</span></div></div>
+            <div class="actions">
+              <button class="btn btn-sm" id="dlBtn" type="button" data-zh="下载 PDF">Download PDF</button>
+              <span class="osub" id="dlNote" hidden></span>
+            </div>
+          </div>
+          <div class="qrbox">
+            <div id="qr" aria-hidden="true"></div>
+            <span class="qrtxt" data-zh="扫码或分享此结果以供第三方核验。">Scan or share to let others verify this result.</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="d-pending" class="pending" hidden>
+        <div class="big" data-zh="检测进行中">Testing in progress</div>
+        <p data-zh="该订单的结果尚未出具，完成后会在此显示并邮件通知您。">Results for this order aren't ready yet. They'll appear here and you'll get an email when done.</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="foot" data-zh="© 2026 JX 检测实验室 · 客户门户">© 2026 JX Laboratories · Client Portal</div>
+</div>
+
+<script>
+var VERIFY_BASE="https://jxlaboratories.com/test/";
+var CLIENT={name:"Nordic Wellness Co.",name_zh:"Nordic Wellness Co."};
+var ORDERS=[
+  {id:"139576",product:"Omega-3 Fish Oil Softgels",product_zh:"欧米伽-3 鱼油软胶囊",matrix:"Softgel capsule",matrix_zh:"软胶囊",lot:"NW-2410-03",received:"2026-10-09",reported:"2026-10-14",status:"ready",overall:"PASS",overall_zh:"合格 · 通过",
+    tests:[
+      {name:"Lead (Pb)",name_zh:"铅 (Pb)",method:"ICP-MS",result:"<0.02 ppm",limit:"≤ 0.10 ppm"},
+      {name:"Cadmium (Cd)",name_zh:"镉 (Cd)",method:"ICP-MS",result:"<0.01 ppm",limit:"≤ 0.10 ppm"},
+      {name:"Arsenic (As)",name_zh:"砷 (As)",method:"ICP-MS",result:"0.03 ppm",limit:"≤ 0.10 ppm"},
+      {name:"Mercury (Hg)",name_zh:"汞 (Hg)",method:"ICP-MS",result:"<0.01 ppm",limit:"≤ 0.10 ppm"},
+      {name:"Peroxide value",name_zh:"过氧化值",method:"AOCS Cd 8-53",result:"3.1 meq/kg",limit:"≤ 5.0 meq/kg"}
+    ]},
+  {id:"139577",product:"Whey Protein Powder (Vanilla)",product_zh:"乳清蛋白粉（香草）",matrix:"Powder blend",matrix_zh:"粉末",lot:"PF-2409-11",received:"2026-10-10",reported:"2026-10-16",status:"ready",overall:"PASS",overall_zh:"合格 · 通过",
+    tests:[
+      {name:"Protein (N x 6.25)",name_zh:"蛋白质",method:"AOAC 991.20",result:"24.3 g / serving",limit:"≥ 24 g (label)"},
+      {name:"Total plate count",name_zh:"菌落总数",method:"AOAC 990.12",result:"180 CFU/g",limit:"≤ 10,000 CFU/g"},
+      {name:"Salmonella",name_zh:"沙门氏菌",method:"AOAC 2013.01",result:"Not detected",limit:"Absent / 25 g"},
+      {name:"Listeria monocytogenes",name_zh:"单增李斯特菌",method:"AOAC 2013.01",result:"Not detected",limit:"Absent / 25 g"}
+    ]},
+  {id:"139580",product:"Collagen Peptides",product_zh:"胶原蛋白肽",matrix:"Powder",matrix_zh:"粉末",lot:"NW-2410-09",received:"2026-10-21",reported:"—",status:"lab"}
+];
+
+(function(){
+  var lang="en";
+  document.querySelectorAll("[data-zh]").forEach(function(el){el.dataset.en=el.textContent;});
+  var qr=null;
+
+  function show(id){
+    ["view-login","view-dash","view-order"].forEach(function(v){document.getElementById(v).hidden=(v!==id);});
+    document.getElementById("who").hidden=(id==="view-login");
+    scrollTo({top:0,behavior:"instant"in window?"instant":"auto"});
+  }
+  function L(en,zh){return lang==="zh"?zh:en;}
+
+  function applyLang(){
+    document.querySelectorAll("[data-zh]").forEach(function(el){var v=lang==="zh"?el.dataset.zh:el.dataset.en;if(v!=null)el.textContent=v;});
+    document.getElementById("langEn").setAttribute("aria-pressed",lang==="en"?"true":"false");
+    document.getElementById("langZh").setAttribute("aria-pressed",lang==="zh"?"true":"false");
+    document.documentElement.lang=lang==="zh"?"zh-Hans":"en";
+    document.getElementById("whoName").textContent=lang==="zh"?CLIENT.name_zh:CLIENT.name;
+    document.getElementById("greeting").textContent=L("Welcome, ","欢迎，")+(lang==="zh"?CLIENT.name_zh:CLIENT.name);
+    if(!document.getElementById("view-dash").hidden) renderDash();
+  }
+
+  function renderDash(){
+    var ready=ORDERS.filter(function(o){return o.status==="ready";}).length;
+    var lab=ORDERS.length-ready;
+    document.getElementById("st-total").textContent=ORDERS.length;
+    document.getElementById("st-ready").textContent=ready;
+    document.getElementById("st-lab").textContent=lab;
+    var tb=document.getElementById("orderRows");tb.innerHTML="";
+    ORDERS.forEach(function(o){
+      var tr=document.createElement("tr");
+      var pill=o.status==="ready"
+        ? '<span class="pill ready">✓ '+L("Ready","已出结果")+'</span>'
+        : '<span class="pill lab">● '+L("In lab","检测中")+'</span>';
+      tr.innerHTML='<td class="oid num">'+o.id+'</td>'
+        +'<td><span class="oprod">'+L(o.product,o.product_zh)+'</span><br><span class="osub">'+L(o.matrix,o.matrix_zh)+' · '+L("Lot","批次")+' '+o.lot+'</span></td>'
+        +'<td class="num">'+o.reported+'</td>'
+        +'<td>'+pill+'</td>'
+        +'<td class="arrow">→</td>';
+      tr.addEventListener("click",function(){openOrder(o.id);});
+      tb.appendChild(tr);
+    });
+  }
+
+  function openOrder(id){
+    var o=ORDERS.filter(function(x){return x.id===id;})[0];if(!o)return;
+    document.getElementById("d-rid").textContent=o.id;
+    document.getElementById("d-product").textContent=L(o.product,o.product_zh);
+    document.getElementById("d-matrix").textContent=L(o.matrix,o.matrix_zh);
+    document.getElementById("d-lot").textContent=o.lot;
+    document.getElementById("d-received").textContent=o.received;
+    document.getElementById("d-reported").textContent=o.reported;
+    document.getElementById("d-status").textContent=o.status==="ready"?L("Reported","已出报告"):L("In the lab","检测中");
+
+    var ready=o.status==="ready";
+    document.getElementById("d-results").hidden=!ready;
+    document.getElementById("d-pending").hidden=ready;
+
+    if(ready){
+      document.getElementById("d-overall").textContent=L(o.overall,o.overall_zh);
+      var rows=document.getElementById("d-rows");rows.innerHTML="";
+      o.tests.forEach(function(x){
+        var tr=document.createElement("tr");
+        tr.innerHTML='<td><span class="tname">'+L(x.name,x.name_zh)+'</span></td>'
+          +'<td class="tmethod">'+x.method+'</td>'
+          +'<td class="r num">'+x.result+'</td>'
+          +'<td class="r num tmethod">'+x.limit+'</td>'
+          +'<td class="r"><span class="pass">✓ '+L("Pass","合格")+'</span></td>';
+        rows.appendChild(tr);
+      });
+      var qrEl=document.getElementById("qr");qrEl.innerHTML="";
+      try{qr=new QRCode(qrEl,{text:VERIFY_BASE+o.id,width:160,height:160,colorDark:"#113a66",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+    }
+    show("view-order");
+  }
+
+  document.getElementById("loginForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    show("view-dash");renderDash();applyLang();
+  });
+  document.getElementById("logoutBtn").addEventListener("click",function(){
+    document.getElementById("pw").value="";show("view-login");
+  });
+  document.getElementById("backBtn").addEventListener("click",function(){show("view-dash");renderDash();});
+  document.getElementById("dlBtn").addEventListener("click",function(){
+    var n=document.getElementById("dlNote");
+    n.textContent=L("Demo — the signed PDF downloads here in production.","演示 — 正式版在此下载带签章 PDF。");
+    n.hidden=false;
+  });
+  document.getElementById("langEn").addEventListener("click",function(){lang="en";applyLang();});
+  document.getElementById("langZh").addEventListener("click",function(){lang="zh";applyLang();});
+
+  applyLang();
+  show("view-login");
+})();
+</script>
+</body>
+</html>

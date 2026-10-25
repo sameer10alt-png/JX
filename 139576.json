@@ -1,0 +1,42 @@
+{
+  "product": "Omega-3 Fish Oil Softgels",
+  "client": "Nordic Wellness Co.",
+  "matrix": "Softgel capsule",
+  "lot": "NW-2410-03",
+  "received": "2026-10-09",
+  "reported": "2026-10-14",
+  "analyst": "Dr. L. Chen",
+  "overall": "PASS",
+  "tests": [
+    {
+      "name": "Lead (Pb)",
+      "method": "ICP-MS",
+      "result": "<0.02 ppm",
+      "limit": "≤ 0.10 ppm"
+    },
+    {
+      "name": "Cadmium (Cd)",
+      "method": "ICP-MS",
+      "result": "<0.01 ppm",
+      "limit": "≤ 0.10 ppm"
+    },
+    {
+      "name": "Arsenic (As)",
+      "method": "ICP-MS",
+      "result": "0.03 ppm",
+      "limit": "≤ 0.10 ppm"
+    },
+    {
+      "name": "Mercury (Hg)",
+      "method": "ICP-MS",
+      "result": "<0.01 ppm",
+      "limit": "≤ 0.10 ppm"
+    },
+    {
+      "name": "Peroxide value",
+      "method": "AOCS Cd 8-53",
+      "result": "3.1 meq/kg",
+      "limit": "≤ 5.0 meq/kg"
+    }
+  ]
+}

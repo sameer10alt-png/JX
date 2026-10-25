@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0}img{max-width:100%;height:auto}[hidden]{display:none!important}</style>
+<title>JX Certificate Verification</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* Layout: certificate verification — white sheet, blue/green brand, green "verified" banner, monospace-aligned results table. */
+  :root{
+    --bg:#ffffff;--surface:#f4f7fb;--fg:#12395f;--muted:#5c7389;--line:#dde7f0;
+    --blue:#1f66b0;--blue-deep:#113a66;--green:#2f9e6b;--green-tint:#e8f6ee;--blue-tint:#eaf2fb;
+    --warn:#b55b00;--warn-tint:#fdf0e3;
+    --font-display:"Noto Serif SC",Georgia,serif;
+    --font-body:"Inter","Noto Sans SC","PingFang SC",system-ui,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;line-height:1.25}
+  p{margin:0}
+  .num{font-variant-numeric:tabular-nums}
+
+  .page{max-width:820px;margin-inline:auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:clamp(18px,4vw,40px)}
+
+  /* topbar */
+  .topbar{background:var(--bg);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:50}
+  .topbar-in{max-width:820px;margin-inline:auto;display:flex;align-items:center;gap:12px;min-height:58px;padding-inline:max(18px,env(safe-area-inset-left,0px));padding-block:8px}
+  .brand{display:flex;align-items:center;gap:9px;text-decoration:none;margin-right:auto}
+  .logo{font-family:var(--font-body);font-weight:800;font-size:1.35rem;letter-spacing:-.01em}
+  .logo .j{color:var(--blue)}.logo .x{color:var(--green);margin-left:-.06em}
+  .brand small{display:block;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .lang-switch button{border:none;background:transparent;font-family:var(--font-body);font-weight:700;font-size:.8rem;padding:7px 12px;cursor:pointer;color:var(--muted)}
+  .lang-switch button[aria-pressed="true"]{background:var(--blue);color:#fff}
+
+  /* verified banner */
+  .status-banner{display:flex;align-items:center;gap:14px;border-radius:14px;padding:18px 22px;margin-bottom:18px}
+  .status-banner.ok{background:var(--green);color:#fff}
+  .status-banner.unknown{background:var(--warn-tint);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+  .status-banner .mk{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex:0 0 auto}
+  .status-banner.unknown .mk{background:#fff;color:var(--warn)}
+  .status-banner b{display:block;font-family:var(--font-display);font-size:1.12rem}
+  .status-banner span{font-size:.86rem;opacity:.92}
+
+  /* certificate sheet */
+  .cert{background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .cert-head{padding:24px 26px;border-bottom:2px solid var(--blue-deep);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start}
+  .cert-head h1{font-size:1.25rem;color:var(--blue-deep)}
+  .cert-head .sub{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px;font-family:var(--font-body);font-weight:600}
+  .cert-head .rid{text-align:right}
+  .cert-head .rid b{font-family:var(--font-body);font-size:1.05rem;color:var(--blue)}
+  .cert-head .rid span{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+
+  .meta{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  @media(min-width:560px){.meta{grid-template-columns:1fr 1fr}}
+  @media(min-width:760px){.meta{grid-template-columns:repeat(3,1fr)}}
+  .meta div{background:var(--bg);padding:14px 18px}
+  .meta b{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;font-weight:700}
+  .meta span{font-size:.94rem}
+
+  .results-wrap{padding:8px 0}
+  .results-title{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:16px 26px 8px}
+  .rscroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.9rem}
+  thead th{text-align:left;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 14px;border-bottom:1px solid var(--line)}
+  thead th:first-child{padding-left:26px}
+  thead th.r,td.r{text-align:right}
+  thead th.r:last-child,td.r:last-child{padding-right:26px}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody td:first-child{padding-left:26px}
+  tbody tr:last-child td{border-bottom:none}
+  .tname{font-weight:600}
+  .tmethod{color:var(--muted);font-size:.82rem}
+  .pass{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.8rem;color:var(--green);background:var(--green-tint);border-radius:999px;padding:4px 11px}
+
+  .cert-foot{display:grid;gap:22px;padding:24px 26px;border-top:1px solid var(--line);background:var(--surface)}
+  @media(min-width:620px){.cert-foot{grid-template-columns:1fr auto;align-items:center}}
+  .overall{display:flex;align-items:center;gap:14px}
+  .overall .big{font-family:var(--font-display);font-size:1.5rem;color:var(--green)}
+  .overall small{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .sign{font-size:.84rem;color:var(--muted)}
+  .sign b{display:block;color:var(--fg);font-size:.92rem}
+  .qrbox{display:flex;align-items:center;gap:14px}
+  .qrbox #qr{width:92px;height:92px;flex:0 0 auto;background:#fff;padding:6px;border:1px solid var(--line);border-radius:8px}
+  .qrbox #qr img,.qrbox #qr canvas{display:block;width:100%!important;height:100%!important}
+  .qrbox .qrtxt{font-size:.74rem;color:var(--muted);max-width:18ch}
+
+  /* lookup */
+  .lookup{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-top:18px}
+  .lookup h2{font-size:1.05rem;color:var(--blue-deep);margin-bottom:6px}
+  .lookup p{color:var(--muted);font-size:.9rem}
+  .lookup form{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .lookup input{flex:1;min-width:180px;font-family:inherit;font-size:.95rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+  .lookup input:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.92rem;border-radius:8px;padding:11px 20px;border:none;cursor:pointer;background:var(--blue);color:#fff;font-family:inherit}
+  .btn:hover{filter:brightness(1.08)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .chip{font-size:.82rem;font-weight:600;color:var(--blue);background:var(--blue-tint);border:none;border-radius:999px;padding:7px 14px;cursor:pointer;font-family:inherit}
+  .chip:hover{filter:brightness(.97)}
+  .demo-note{margin-top:18px;font-size:.78rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+  .foot{text-align:center;color:var(--muted);font-size:.78rem;padding:26px 0 8px}
+  [hidden]{display:none!important}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html"><span class="logo" aria-hidden="true"><span class="j">J</span><span class="x">X</span></span><span><b style="font-family:var(--font-display);font-size:.98rem" data-zh="JX 检测实验室">JX Laboratories</b><small data-zh="证书核验">Certificate Verification</small></span></a>
+    <div class="lang-switch" role="group" aria-label="Language / 语言">
+      <button type="button" id="langEn" aria-pressed="true">EN</button>
+      <button type="button" id="langZh" aria-pressed="false">中文</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- status banner -->
+  <div class="status-banner ok" id="banner">
+    <div class="mk" aria-hidden="true">✓</div>
+    <div>
+      <b id="bannerTitle" data-zh="证书真实有效">Authentic certificate</b>
+      <span id="bannerSub" data-zh="该报告由 JX 检测实验室出具并验证通过。">This report was issued and verified by JX Laboratories.</span>
+    </div>
+  </div>
+
+  <!-- certificate -->
+  <article class="cert" id="cert">
+    <div class="cert-head">
+      <div>
+        <h1 data-zh="分析证书 (COA)">Certificate of Analysis</h1>
+        <div class="sub" data-zh="ISO/IEC 17025 认可 · FDA 登记">ISO/IEC 17025 Accredited · FDA Registered</div>
+      </div>
+      <div class="rid">
+        <span data-zh="检测编号">Test ID</span>
+        <b id="f-rid" class="num">—</b>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div><b data-zh="产品">Product</b><span id="f-product">—</span></div>
+      <div><b data-zh="客户">Client</b><span id="f-client">—</span></div>
+      <div><b data-zh="基质">Matrix</b><span id="f-matrix">—</span></div>
+      <div><b data-zh="批次号">Lot / Batch</b><span id="f-lot" class="num">—</span></div>
+      <div><b data-zh="收样日期">Received</b><span id="f-received" class="num">—</span></div>
+      <div><b data-zh="报告日期">Reported</b><span id="f-reported" class="num">—</span></div>
+    </div>
+
+    <div class="results-wrap">
+      <div class="results-title" data-zh="检测结果">Analytical results</div>
+      <div class="rscroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-zh="检测项目">Test</th>
+              <th data-zh="方法">Method</th>
+              <th class="r" data-zh="结果">Result</th>
+              <th class="r" data-zh="限值">Limit</th>
+              <th class="r" data-zh="判定">Status</th>
+            </tr>
+          </thead>
+          <tbody id="f-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="cert-foot">
+      <div style="display:grid;gap:18px">
+        <div class="overall">
+          <div>
+            <small data-zh="总体判定">Overall result</small>
+            <span class="big" id="f-overall" data-zh="合格 · 通过">PASS</span>
+          </div>
+        </div>
+        <div class="sign">
+          <span data-zh="审核与授权">Reviewed &amp; authorized by</span>
+          <b id="f-analyst">—</b>
+          <span data-zh="技术主管 · JX 检测实验室">Technical Supervisor · JX Laboratories</span>
+        </div>
+      </div>
+      <div class="qrbox">
+        <div id="qr" aria-hidden="true"></div>
+        <span class="qrtxt" data-zh="此二维码印在报告上，扫码即可核验。">This QR is printed on the report — scan to verify.</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- lookup -->
+  <section class="lookup" id="lookup">
+    <h2 id="lookupTitle" data-zh="核验证书">Verify a certificate</h2>
+    <p id="lookupText" data-zh="输入报告上的检测编号，或扫描报告底部的二维码。">Enter the Test ID printed on your report, or scan the QR at the bottom of it.</p>
+    <form id="lookupForm">
+      <input id="lookupInput" placeholder="e.g. 139576" autocomplete="off" spellcheck="false" aria-label="Test ID">
+      <button class="btn" type="submit" data-zh="核验">Verify</button>
+    </form>
+    <div class="chips" id="chips"></div>
+    <div class="demo-note" data-zh="※ 演示数据。正式上线后，证书数据由实验室信息系统 (LIMS) 提供。">※ Demo records. In production, certificate data is served from your lab information system (LIMS).</div>
+  </section>
+
+  <div class="foot" data-zh="© 2026 JX 检测实验室 · 本页用于核验报告真伪">© 2026 JX Laboratories · Certificate authenticity verification</div>
+</div>
+<script>
+/* Results are loaded from one JSON file per test: test/data/<id>.json */
+var VERIFY_BASE = "https://jxlaboratories.com/test.html"; /* change to your domain */
+
+(function(){
+  var lang="en";
+  document.querySelectorAll("[data-zh]").forEach(function(el){el.dataset.en=el.textContent;});
+  var cert=document.getElementById("cert"),
+      banner=document.getElementById("banner"),
+      bTitle=document.getElementById("bannerTitle"),
+      bSub=document.getElementById("bannerSub"),
+      chips=document.getElementById("chips"),
+      qrEl=document.getElementById("qr"), qr=null;
+
+  function applyLang(){
+    document.querySelectorAll("[data-zh]").forEach(function(el){var v=lang==="zh"?el.dataset.zh:el.dataset.en;if(v!=null)el.textContent=v;});
+    document.querySelectorAll(".passcell").forEach(function(el){el.innerHTML=lang==="zh"?el.dataset.zh:el.dataset.en;});
+    document.getElementById("langEn").setAttribute("aria-pressed",lang==="en"?"true":"false");
+    document.getElementById("langZh").setAttribute("aria-pressed",lang==="zh"?"true":"false");
+    document.documentElement.lang=lang==="zh"?"zh-Hans":"en";
+    var inp=document.getElementById("lookupInput"); if(inp) inp.placeholder=lang==="zh"?"例如 139576":"e.g. 139576";
+  }
+  function setv(elid,en,zh){var el=document.getElementById(elid);el.dataset.en=en||"—";el.dataset.zh=zh||en||"—";}
+
+  function showPrompt(){
+    cert.hidden=true;
+    banner.className="status-banner unknown";
+    banner.querySelector(".mk").textContent="?";
+    bTitle.dataset.en="Verify a test result"; bTitle.dataset.zh="核验检测结果";
+    bSub.dataset.en="Enter your Test ID below, or scan the QR at the bottom of your report.";
+    bSub.dataset.zh="在下方输入检测编号，或扫描报告底部的二维码。";
+    applyLang();
+  }
+  function showUnknown(id){
+    cert.hidden=true;
+    banner.className="status-banner unknown";
+    banner.querySelector(".mk").textContent="!";
+    bTitle.dataset.en="Result not found"; bTitle.dataset.zh="未找到结果";
+    bSub.dataset.en="No test matches “"+id+"”. Check the ID, or scan the QR on your report.";
+    bSub.dataset.zh="没有与“"+id+"”匹配的检测。请核对编号，或扫描报告上的二维码。";
+    applyLang();
+  }
+
+  function render(id,r){
+    banner.className="status-banner ok";
+    banner.querySelector(".mk").textContent="✓";
+    bTitle.dataset.en="Authentic certificate"; bTitle.dataset.zh="证书真实有效";
+    bSub.dataset.en="This report was issued and verified by JX Laboratories.";
+    bSub.dataset.zh="该报告由 JX 检测实验室出具并验证通过。";
+    document.getElementById("f-rid").textContent=id;
+    setv("f-product",r.product,r.product_zh);
+    setv("f-client",r.client,r.client_zh);
+    setv("f-matrix",r.matrix,r.matrix_zh);
+    document.getElementById("f-lot").textContent=r.lot||"—";
+    document.getElementById("f-received").textContent=r.received||"—";
+    document.getElementById("f-reported").textContent=r.reported||"—";
+    setv("f-analyst",r.analyst,r.analyst_zh);
+    var ov=document.getElementById("f-overall"); ov.dataset.en=r.overall||"PASS"; ov.dataset.zh=r.overall_zh||r.overall||"合格 · 通过";
+    var rows=document.getElementById("f-rows"); rows.innerHTML="";
+    (r.tests||[]).forEach(function(x){
+      var tr=document.createElement("tr");
+      var passEN='<span class="pass">✓ Pass</span>', passZH='<span class="pass">✓ 合格</span>';
+      tr.innerHTML='<td><span class="tname">'+(x.name||"")+'</span></td>'
+        +'<td class="tmethod">'+(x.method||"")+'</td>'
+        +'<td class="r num">'+(x.result||"")+'</td>'
+        +'<td class="r num tmethod">'+(x.limit||"")+'</td>'
+        +'<td class="r"><span class="passcell" data-en="'+passEN.replace(/"/g,"&quot;")+'" data-zh="'+passZH.replace(/"/g,"&quot;")+'">'+passEN+'</span></td>';
+      rows.appendChild(tr);
+    });
+    cert.hidden=false;
+    qrEl.innerHTML="";
+    try{ qr=new QRCode(qrEl,{text:VERIFY_BASE+"?id="+id,width:160,height:160,colorDark:"#113a66",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }catch(e){}
+    applyLang();
+  }
+
+  function lookup(id){
+    id=(id||"").trim(); if(!id){showPrompt();return;}
+    fetch(encodeURIComponent(id)+".json",{cache:"no-store"})
+      .then(function(res){ if(!res.ok) throw 0; return res.json(); })
+      .then(function(r){ render(id,r); })
+      .catch(function(){ showUnknown(id); });
+  }
+
+  /* example chips — only IDs that have a JSON file */
+  ["139576","139577","139578"].forEach(function(id){
+    var b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=id;
+    b.addEventListener("click",function(){ location.search="?id="+id; });
+    chips.appendChild(b);
+  });
+  document.getElementById("lookupForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var v=document.getElementById("lookupInput").value.trim();
+    if(v) location.search="?id="+encodeURIComponent(v);
+  });
+  document.getElementById("langEn").addEventListener("click",function(){lang="en";applyLang();});
+  document.getElementById("langZh").addEventListener("click",function(){lang="zh";applyLang();});
+
+  function readId(){
+    try{var q=new URLSearchParams(location.search).get("id"); if(q) return q;}catch(e){}
+    var m=location.pathname.match(/\/test\/([^\/?#]+)/i); if(m&&m[1]) return decodeURIComponent(m[1]);
+    return (location.hash||"").replace(/^#/,"");
+  }
+  applyLang();
+  var id=readId();
+  if(id) lookup(id); else showPrompt();
+})();
+</script>
+</body>
+</html>

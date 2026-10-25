@@ -1,0 +1,42 @@
+{
+  "product": "Turmeric Root Extract 95%",
+  "client": "Botanica Labs",
+  "matrix": "Botanical extract",
+  "lot": "BL-2410-07",
+  "received": "2026-10-12",
+  "reported": "2026-10-18",
+  "analyst": "Dr. L. Chen",
+  "overall": "PASS",
+  "tests": [
+    {
+      "name": "Curcuminoids",
+      "method": "HPLC-UV",
+      "result": "96.1 %",
+      "limit": "≥ 95 % (label)"
+    },
+    {
+      "name": "Pesticide multi-residue",
+      "method": "LC-MS/MS",
+      "result": "None detected",
+      "limit": "Per EU MRL"
+    },
+    {
+      "name": "Lead (Pb)",
+      "method": "ICP-MS",
+      "result": "0.04 ppm",
+      "limit": "≤ 0.50 ppm"
+    },
+    {
+      "name": "Total aerobic count",
+      "method": "USP <2021>",
+      "result": "420 CFU/g",
+      "limit": "≤ 10,000 CFU/g"
+    },
+    {
+      "name": "Identity (ID)",
+      "method": "HPTLC",
+      "result": "Conforms",
+      "limit": "Conforms"
+    }
+  ]
+}

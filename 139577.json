@@ -1,0 +1,36 @@
+{
+  "product": "Whey Protein Powder (Vanilla)",
+  "client": "PeakFuel Nutrition",
+  "matrix": "Powder blend",
+  "lot": "PF-2409-11",
+  "received": "2026-10-10",
+  "reported": "2026-10-16",
+  "analyst": "Dr. M. Okafor",
+  "overall": "PASS",
+  "tests": [
+    {
+      "name": "Protein (N x 6.25)",
+      "method": "AOAC 991.20",
+      "result": "24.3 g / serving",
+      "limit": "≥ 24 g (label)"
+    },
+    {
+      "name": "Total plate count",
+      "method": "AOAC 990.12",
+      "result": "180 CFU/g",
+      "limit": "≤ 10,000 CFU/g"
+    },
+    {
+      "name": "Salmonella",
+      "method": "AOAC 2013.01",
+      "result": "Not detected",
+      "limit": "Absent / 25 g"
+    },
+    {
+      "name": "Listeria monocytogenes",
+      "method": "AOAC 2013.01",
+      "result": "Not detected",
+      "limit": "Absent / 25 g"
+    }
+  ]
+}
